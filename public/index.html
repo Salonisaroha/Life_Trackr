@@ -5,65 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Habit Tracker</title>
     <link rel="stylesheet" href="styles.css">
+   
 </head>
 <body>
-
     <!-- Navbar -->
     <nav class="navbar">
         <div class="logo">HabitTracker</div>
         <ul class="nav-links">
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">My Habits</a></li>
-            <li><a href="#">Reports</a></li>
-            <li><a href="#">Logout</a></li>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="login.html" class="start-btn">Start Today</a></li>
         </ul>
     </nav>
 
     <!-- Hero Section -->
     <header class="hero">
-        <h1>Track Your Habits, Build Your Future</h1>
-        <p>Stay consistent and achieve your goals with ease.</p>
-        <button class="btn">Get Started</button>
+        <h1>The Simplest Habit Tracker App on this Planet</h1>
+        <p>Finally, a daily habit tracker that helps you do more, by doing less.</p>
+        <button class="btn1" onclick="location.href='login.html'">Start DailyHabits today</button>
+        <p>100% free forever</p>
     </header>
 
-    <!-- Habit Management Section -->
-    <section class="habit-section">
-        <h2>Your Habits</h2>
-        <div class="habit-list">
-            <div class="habit-card">
-                <h3>Morning Jog</h3>
-                <p>Daily - 30 mins</p>
-                <button class="track-btn">Mark as Done</button>
+    <!-- Pre-login Info Section -->
+    <section class="info-section">
+        <h2>It's really simple.<br>Here's how it works!</h2>
+        <div class="info-content">
+            <div class="info-item">
+                <img src="calendar-overview.png" alt="Calendar Overview">
+                <div>
+                    <h3>Visualize your entire month at a glance.</h3>
+                    <p>With a simple calendar view, you can see your activity for the entire month to understand your progress and focus areas.</p>
+                </div>
             </div>
-            <div class="habit-card">
-                <h3>Read a Book</h3>
-                <p>Weekly - 5 chapters</p>
-                <button class="track-btn">Mark as Done</button>
+            <div class="info-item">
+                <img src="goal-setting.png" alt="Flexible Goals">
+                <div>
+                    <h3>Set flexible goals instead of streaks.</h3>
+                    <p>Achieve your habits at your own pace, rather than being tied to streak-based motivation.</p>
+                </div>
+            </div>
+            <div class="info-item">
+                <img src="notes-reflection.png" alt="Make Notes">
+                <div>
+                    <h3>Make notes to reflect on your journey.</h3>
+                    <p>Keep track of your progress and reflect on what works best for you.</p>
+                </div>
+            </div>
+            <div class="info-item">
+                <img src="mobile-responsive.png" alt="Fully Responsive">
+                <div>
+                    <h3>Fully responsive on mobile.</h3>
+                    <p>Access your habit tracker seamlessly from any device.</p>
+                </div>
             </div>
         </div>
     </section>
-
-    <!-- Progress Tracking Section -->
-    <section class="progress-section">
-        <h2>Progress Overview</h2>
-        <div class="progress-container">
-            <div class="progress-box">
-                <h3>Streak</h3>
-                <p>🔥 7 Days</p>
-            </div>
-            <div class="progress-box">
-                <h3>Completion Rate</h3>
-                <p>85%</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Reports & Analytics -->
-    <section class="reports-section">
-        <h2>Reports & Analytics</h2>
-        <p>View your habit performance trends and insights.</p>
-        <button class="btn">View Reports</button>
-    </section>
-
 </body>
 </html>
