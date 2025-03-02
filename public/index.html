@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Habit Tracker</title>
     <link rel="stylesheet" href="styles.css">
-   
 </head>
 <body>
     <!-- Navbar -->
@@ -13,51 +12,116 @@
         <div class="logo">HabitTracker</div>
         <ul class="nav-links">
             <li><a href="login.html">Login</a></li>
-            <li><a href="login.html" class="start-btn">Start Today</a></li>
+            <li><a href="login.html" class="start-btn">StartToday</a></li>
         </ul>
     </nav>
 
     <!-- Hero Section -->
-    <header class="hero">
-        <h1>The Simplest Habit Tracker App on this Planet</h1>
-        <p>Finally, a daily habit tracker that helps you do more, by doing less.</p>
+    <header class="hero-section">
+        <h1 class="hero-title">The Simplest Habit Tracker App on this Planet</h1>
+        <p class="hero-subtitle">Finally, a daily habit tracker that helps you do more, by doing less.</p>
         <button class="btn1" onclick="location.href='login.html'">Start DailyHabits today</button>
-        <p>100% free forever</p>
+        <p id="para1">100% free forever</p>
     </header>
 
+    <!-- Habit Tracker Working -->
+    <div class="main">
+        <img src="assets/habit-tracker.gif" alt="habit tracker" class="habit-gif">
+    </div>
+
     <!-- Pre-login Info Section -->
-    <section class="info-section">
-        <h2>It's really simple.<br>Here's how it works!</h2>
+    <section class="how-it-works">
+        <div class="info">
+            <h2>It's really simple.<br>Here's how it works!</h2>
+        </div>
+        
         <div class="info-content">
-            <div class="info-item">
-                <img src="calendar-overview.png" alt="Calendar Overview">
-                <div>
+            <!-- Card 1-->
+            <div class="step">
+                <img src="./assets/calender.png" alt="Step 1">
+                <div class="text">
                     <h3>Visualize your entire month at a glance.</h3>
-                    <p>With a simple calendar view, you can see your activity for the entire month to understand your progress and focus areas.</p>
+                    <p>With a simple calender view, you can see your activity for the entire month to see how you're doing and which areas you might need to focus on.</p>
                 </div>
             </div>
-            <div class="info-item">
-                <img src="goal-setting.png" alt="Flexible Goals">
-                <div>
-                    <h3>Set flexible goals instead of streaks.</h3>
-                    <p>Achieve your habits at your own pace, rather than being tied to streak-based motivation.</p>
-                </div>
-            </div>
-            <div class="info-item">
-                <img src="notes-reflection.png" alt="Make Notes">
-                <div>
+            <!--Card 2-->
+            <div class="step">
+                <div class="text">
                     <h3>Make notes to reflect on your journey.</h3>
-                    <p>Keep track of your progress and reflect on what works best for you.</p>
+                    <p>No journey is complete without reflection, which promotes self-awareness and prompts you to evaluate your own progress, as well as areas where you need to improve.
+
+                        Ultimately, you are the best judge of your own journey.</p>
                 </div>
+                <img src="./assets/notes.png" alt="Step 4">
             </div>
-            <div class="info-item">
-                <img src="mobile-responsive.png" alt="Fully Responsive">
-                <div>
-                    <h3>Fully responsive on mobile.</h3>
-                    <p>Access your habit tracker seamlessly from any device.</p>
+            <!-- Card 3-->
+            <div class="step reverse">
+                <div class="text">
+                    <h3>Set flexible goals instead of streaks.</h3>
+                    <p>Streaks break, because life happens. But don't let that stop your progress.
+
+                        Goals are based on flexible consistency, which makes it okay to fail sometimes. It's more important that you continue doing your habit.</p>
                 </div>
+                <img src="./assets/goals.png" alt="Step 2">
+            </div>
+         
+         </div>
+    </section>
+    <section class="progress-section">
+        <img src="./assets/image.png" alt="Progress Icon" class="progress-icon">
+        <h2>Stay Empowered by <br> Your Progress</h2>
+        <p>Scientific studies show that tracking your progress can significantly boost
+           your chances of successfully building and maintaining habits.
+           Fuel your journey with insightful metrics, celebrate your milestones, and stay 
+           motivated on your path to success.</p>
+    </section>
+
+    <!-- Main Content -->
+    <section class="dashboard">
+        <!-- Top Two Columns -->
+        <div class="row">
+            <div class="box">
+                <img src="./assets/card1.jpg" alt="June 2023 Calendar">
+            </div>
+            <div class="box">
+                <img src="./assets/streaks.jpg" alt="Streaks">
+            </div>
+        </div>
+
+        <!-- Bottom Two Columns -->
+        <div class="row">
+            <div class="box">
+                <img src="./assets/card2.jpg" alt="Bottom Left">
+            </div>
+            <div class="box">
+                <img src="./assets/average.jpg" alt="Bottom Right">
             </div>
         </div>
     </section>
+    <section class="challenges-section">
+        
+        <!-- Left Content -->
+        <div class="challenges-content">
+            <!-- Single Avatar Image -->
+            <img src="./assets/avatar.png" alt="Users" class="avatars">
+    
+            <!-- Title & Description -->
+            <h2>Level Up the Fun with <span class="highlight">Challenges.</span></h2>
+            <p>Engage in friendly competitions and participate in monthly challenges to make habit-building a more exhilarating journey.</p>
+    
+            <!-- Bullet Points -->
+            <div class="challenge-info">
+                <p><span class="icon">⚔️</span> <strong>Challenge your Friends.</strong> Boost your habit-forming journey with a bit of friendly rivalry.</p>
+                <p><span class="icon">📅</span> <strong>Join Monthly Challenge.</strong> Climb the leaderboards, make habit formation fun and rewarding.</p>
+            </div>
+        </div>
+    
+        <!-- Right Section: Leaderboard Image -->
+        <div class="leaderboard">
+            <img src="./assets/club.png" alt="Leaderboard">
+        </div>
+    
+    </section>
+    
 </body>
 </html>
