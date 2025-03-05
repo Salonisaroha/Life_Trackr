@@ -5,78 +5,80 @@ body {
     padding: 0;
     background: #f4f4f4;
     text-align: center;
-    padding-top: 70px;  /* Prevent content from going behind the navbar */
+    padding-top: 70px;
 }
-
 /* Navbar */
 .navbar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: #2c3e50;
-    padding: 15px 20px;
-    color: white;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);  /* Added shadow */
+    justify-content: space-between;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef); /* Soft gradient */
+    padding: 15px ;
     width: 100%;
     position: fixed;
     top: 0;
     left: 0;
     z-index: 1000;
-    border-bottom: 3px solid #1f2b38;
-    transition: all 0.3s ease-in-out;
+    border-radius: 0 0 15px 15px; /* Rounded bottom edges */
+    border-bottom: 1px solid #dee2e6; /* Subtle border instead of shadow */
 }
-
-/* Navbar Branding */
-.navbar h1 {
-    font-size: 1.5em;
-    margin: 0;
-    font-weight: bold;
-}
-
-/* Navbar Container */
-.nav-container {
+/* Logo and title */
+.logo {
     display: flex;
     align-items: center;
-    width: 100%;
-    justify-content: space-between;
+    gap: 5px;
+    font-weight: bold;
+    font-size: 1.4rem;
+    color: #343a40;
 }
-
+/* Logo image styling */
+.logo img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 8px;
+    background-color: white;
+    padding: 5px;
+}
 /* Navbar Links */
 .nav-links {
     list-style: none;
     display: flex;
-    gap: 20px;
+    gap: 15px;
     margin: 0;
-    padding: 0;
+    padding-right: 15px;
 }
 
 .nav-links li {
     display: inline-block;
-
 }
 
 .nav-links a {
-    color: white;
+    color: #343a40;
     text-decoration: none;
-    padding: 10px 28px;
-    border-radius: 5px;
+    padding: 10px 18px;
+    border-radius: 8px;
     font-weight: 600;
     transition: all 0.3s ease-in-out;
+    background: transparent;
 }
 
 .nav-links a:hover {
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.3);
+    background: #6c5ce7;
+    color: white;
 }
 
-/* Fix Position of "Login" & "Start Today" */
-.nav-links {
-    margin-left: auto;
-}
-
-/* Hover Effect */
-.navbar:hover {
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        padding: 10px;
+    }
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
 }
 /* Title Styling */
 .hero-title {
@@ -87,7 +89,7 @@ body {
     margin: 20px 0;
     background: linear-gradient(to right, #2c3e50, #1f2b38);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; /* Gradient text effect */
+    -webkit-text-fill-color: transparent; 
     animation: fadeIn 1.2s ease-in-out;
 }
 
@@ -134,11 +136,11 @@ body {
     font-weight: bold;
     margin-left: auto;
     margin-right: auto;
-    flex-shrink: 0; /* Prevents shrinking */
+    flex-shrink: 0; 
 }
 
 .btn1::before {
-    content: '\2714'; /* Unicode checkmark */
+    content: '\2714'; 
     background: white;
     color: black;
     padding: 5px;
@@ -147,9 +149,9 @@ body {
 #para1{
     margin-top: 20px;
 }
-/* Responsive Habit Tracker Image */
+
 .habit-gif {
-    max-width: 70%;  /* Reduced size */
+    max-width: 70%;  
     height: auto;
     display: block;
     margin: auto;
@@ -158,7 +160,7 @@ body {
 /* Info */
 .info {
     text-align: center;
-    background: transparent; /* No background */
+    background: transparent; 
     padding: 10px 20px;
     max-width: 60%;
     margin: 20px auto;
@@ -171,10 +173,6 @@ body {
     font-family: 'Poppins', sans-serif;
     line-height: 1.4;
 }
-
-
-
-
 /* Info Section */
 .info-content {
     display: flex;
@@ -217,7 +215,7 @@ body {
 
 /* Alternating Layout */
 .step.reverse {
-    flex-direction: row-reverse; /* Explicitly flips content */
+    flex-direction: row-reverse; 
 }
 
 /* Hover Effect */
@@ -348,14 +346,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 40px; /* Increased space between rows */
+    gap: 40px; 
     margin-top: 30px;
 }
 
 /* Row for Two Columns */
 .row {
     display: flex;
-    gap: 40px; /* Increased space between images */
+    gap: 40px; 
     justify-content: center;
     max-width: 1000px;
     width: 100%;
@@ -374,12 +372,12 @@ body {
     min-height: 220px;
 }
 
-/* Reduce Image Size & Add Margin */
+
 .box img {
     width: 85%; 
     max-width: 350px;
     border-radius: 10px;
-    margin: 10px; /* Adds space inside boxes */
+    margin: 10px; 
 }
 
 /* Responsive Design */
@@ -387,7 +385,7 @@ body {
     .row {
         flex-direction: column;
         align-items: center;
-        gap: 20px; /* Reduce space for smaller screens */
+        gap: 20px; 
     }
 
     .box {
@@ -404,9 +402,9 @@ body {
     justify-content: space-between;
     align-items: center;
     max-width: 1100px;
-    margin: 80px auto; /* Increased margin for better spacing */
-    gap: 80px; /* More space between left & right */
-    padding-bottom: 80px; /* Space before next section */
+    margin: 80px auto; 
+    gap: 80px; 
+    padding-bottom: 40px; 
 }
 
 /* Left Content */
@@ -415,12 +413,12 @@ body {
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 20px; /* More space between elements */
+    gap: 20px; 
 }
 
 /* Avatar Image */
 .avatars {
-    width: 200px; /* Adjust width */
+    width: 200px; 
     height: auto;
     margin-bottom: 10px;
 }
@@ -467,7 +465,7 @@ p {
         flex-direction: column;
         align-items: center;
         text-align: center;
-        margin: 50px auto; /* Reduce margin for smaller screens */
+        margin: 50px auto; 
         gap: 50px;
     }
 
@@ -478,4 +476,134 @@ p {
     .avatars {
         margin: 0 auto;
     }
+}
+/* Transform Section Styling */
+.transform-section {
+    text-align: center;
+    padding: 20px 20px;
+    background: #f8f9fa; 
+    border-radius: 10px;
+    margin: 50px auto;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
+}
+
+/* Icon Styling */
+.transform-section .icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 15px;
+    filter: hue-rotate(220deg);
+}
+
+/* Heading */
+.transform-section h2 {
+    font-size: 2rem;
+    color: #2c3e50;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Paragraph */
+.transform-section p {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+    max-width: 650px;
+    margin: 0 auto 20px;
+}
+
+/* CTA Button */
+.cta-button {
+    display: inline-block;
+    background: #3366ff;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 3px 6px rgba(51, 102, 255, 0.2);
+}
+
+.cta-button:hover {
+    background: #264bcc;
+    box-shadow: 0 5px 10px rgba(51, 102, 255, 0.3);
+}
+/* Footer Styling */
+.footer {
+    background: #1e1e1e;
+    color: white;
+    padding: 40px 20px;
+    font-size: 14px;
+    position: relative;
+}
+
+/* Blue Line Above Footer */
+.footer::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 4px; 
+    background: linear-gradient(to right, #6a11cb, #2575fc); 
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Footer Container */
+.footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Footer Columns */
+.footer-column {
+    flex: 1;
+    min-width: 200px;
+    margin: 10px;
+}
+
+.footer-column h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #ccc;
+}
+
+.footer-column ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-column ul li {
+    margin-bottom: 8px;
+}
+
+.footer-column ul li a {
+    text-decoration: none;
+    color: #bbb;
+    transition: color 0.3s;
+}
+
+.footer-column ul li a:hover {
+    color: white;
+}
+
+/* App Store Buttons */
+.footer-column img {
+    width: 150px;
+    margin: 5px 0;
+}
+
+/* Bottom Footer Text */
+.footer-bottom {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #aaa;
 }
