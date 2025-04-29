@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 
 // Hardcoded JWT secret key
-const JWT_SECRET = "d47f2f763c9de2e48e8d7e68c65b7a3ad7f247108675a1b23e4e40c0f7a0a896b7dfc3f127de5a28a9b4dcdff0ceba5b3ed9b56cfed17212c47d4c53a4a23a58"; // <-- define it here
+const JWT_SECRET = "super_secret_key"; // <-- define it here
 
 // User Registration
 exports.register = async (req, res) => {
