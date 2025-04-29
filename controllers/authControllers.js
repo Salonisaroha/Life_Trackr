@@ -1,9 +1,10 @@
+require("dotenv").config();
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 
-// Hardcoded JWT secret key
-const JWT_SECRET = "super_secret_key"; // <-- define it here
+
 
 // User Registration
 exports.register = async (req, res) => {
@@ -56,7 +57,8 @@ exports.login = (req, res) => {
         }
 
         // Generate token using the hardcoded secret
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1h" });
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
 
         res.json({ message: "Login successful", token });
     });
