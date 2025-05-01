@@ -1,288 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Habit Tracker Dashboard</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       height: 100vh;
+      background-color: #f3f4f6;
+      color: #111827;
     }
-    .container {
-      display: flex;
-      width: 100%;
-    }
+
     .sidebar {
       width: 250px;
-      background: #f5f5f5;
-      padding: 20px;
+      background-color: #1f2937;
+      color: white;
       display: flex;
       flex-direction: column;
-    }
-    .profile {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .avatar {
-      background-color: #ccc;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      margin-right: 10px;
-    }
-    .sidebar nav ul {
-      list-style: none;
-      padding: 0;
-    }
-    .sidebar nav ul li {
-      padding: 8px 0;
-      cursor: pointer;
-    }
-    .sidebar nav ul li.active {
-      color: white;
-      background-color: #007bff;
-      border-radius: 4px;
-      padding-left: 10px;
-    }
-    .main {
-      flex-grow: 1;
       padding: 20px;
-      background: #fff;
+    }
+
+    .sidebar h2 {
+      font-size: 1.8rem;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      color: #d1d5db;
+      text-decoration: none;
+      margin: 10px 0;
+      font-size: 1rem;
+      transition: 0.3s;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .sidebar a:hover {
+      background-color: #374151;
+      color: #fff;
+    }
+
+    .main {
+      flex: 1;
+      padding: 30px;
       overflow-y: auto;
     }
-    .calendar-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-      overflow-x: auto;
-    }
-    .month-nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 10px;
-      font-weight: bold;
-      gap: 10px;
-    }
+
     .calendar {
       display: flex;
-      gap: 4px;
-      white-space: nowrap;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
     }
-    .calendar .day-number {
-      padding: 10px;
-      min-width: 30px;
-      background: #eee;
-      border-radius: 5px;
-    }
-    .calendar .today {
-      background-color: #007bff;
-      color: white;
+
+    .calendar-day {
+      background-color: #e5e7eb;
+      border-radius: 10px;
+      padding: 15px;
+      min-width: 100px;
+      text-align: center;
       font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
     }
-    .habit-section {
-      text-align: center;
-      margin-bottom: 20px;
+
+    .calendar-day:hover {
+      background-color: #d1d5db;
     }
-    .habit-form {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
+
+    .sections {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
     }
-    .habit-form input, .habit-form button {
-      padding: 8px;
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
-    .habit-list {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
     }
-    .habit-item {
-      background: #e0f7fa;
-      padding: 10px 20px;
+
+    .btn {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 10px 16px;
       border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 80%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
-    .notes {
-      margin-top: 40px;
-      text-align: center;
-    }
-    .note-item {
-      margin-top: 10px;
-      background: #fff3cd;
-      padding: 10px;
-      border: 1px solid #ffeeba;
-      border-radius: 6px;
-      width: 80%;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .notes button {
-      margin-top: 10px;
-      padding: 8px 16px;
+
+    .btn:hover {
+      background-color: #4338ca;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <aside class="sidebar">
-      <div class="profile">
-        <div class="avatar" id="avatar">S</div>
-        <div class="username" id="username">Saloni Saroha</div>
-      </div>
-      <nav>
-        <ul>
-          <li>🧭 All Habits</li>
-          <li class="active">🌞 Evening</li>
-        </ul>
-        <h4>AREAS</h4>
-        <ul>
-          <li>➕ New Area</li>
-        </ul>
-        <h4>PREFERENCES</h4>
-        <ul>
-          <li>📝 Manage Habits</li>
-          <li>⚙️ App Settings</li>
-          <li>🔗 Resources</li>
-        </ul>
-      </nav>
-    </aside>
-    <main class="main">
-      <div class="calendar-container">
-        <div class="month-nav">
-          <span id="prevMonth">◀</span>
-          <span id="monthYear"></span>
-          <span id="nextMonth">▶</span>
-        </div>
-        <div class="calendar" id="calendar"></div>
-      </div>
-
-      <section class="habit-section">
-        <div class="habit-form">
-          <input type="text" id="habitName" placeholder="Enter Habit">
-          <input type="date" id="habitDeadline">
-          <button onclick="addHabit()">+ New Habit</button>
-        </div>
-        <div class="habit-list" id="habitList"></div>
-      </section>
-
-      <section class="notes">
-        <h3>Notes</h3>
-        <p>Create your first note by clicking on + New Note</p>
-        <button onclick="addNote()">+ New Note</button>
-        <div id="noteList"></div>
-      </section>
-    </main>
+  <div class="sidebar">
+    <h2>HabitTracker</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">Add Habit</a>
+    <a href="#">View Habits</a>
+    <a href="#">Achievements</a>
+    <a href="#">Goals</a>
+    <a href="#">Logout</a>
   </div>
+
+  <div class="main">
+    <h1>Welcome Back!</h1>
+    <div class="calendar" id="calendar"></div>
+
+    <div class="sections">
+      <div class="card">
+        <h3>Today's Tasks</h3>
+        <ul id="taskList">
+          <li>Drink Water</li>
+          <li>30-minute Walk</li>
+        </ul>
+        <button class="btn" onclick="addTask()">+ Add Task</button>
+      </div>
+
+      <div class="card">
+        <h3>Achieve Goals</h3>
+        <p>Keep your streak alive! You've completed 4/7 habits this week.</p>
+        <button class="btn">View Progress</button>
+      </div>
+
+      <div class="card">
+        <h3>Completed Habits</h3>
+        <p>🎉 You completed 10 habits this month!</p>
+        <button class="btn">See History</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const user = {
-      name: 'Saloni Saroha'
-    };
-    document.getElementById('username').innerText = user.name;
-    document.getElementById('avatar').innerText = user.name.charAt(0).toUpperCase();
-
-    let currentDate = new Date();
-
-    function renderCalendar(date) {
-      const calendar = document.getElementById('calendar');
-      const monthYear = document.getElementById('monthYear');
-
-      const year = date.getFullYear();
-      const month = date.getMonth();
-
-      calendar.innerHTML = '';
-      monthYear.innerText = `${date.toLocaleString('default', { month: 'long' })}, ${year}`;
-
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-      for (let i = 1; i <= daysInMonth; i++) {
-        const cell = document.createElement('div');
-        cell.innerText = i;
-        cell.classList.add('day-number');
-        if (i === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
-          cell.classList.add('today');
+    // Fetch the current habits from the backend
+    async function loadHabits() {
+      const response = await fetch('http://localhost:5000/api/habits', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Token from localStorage after login
+        },
+      });
+      const data = await response.json();
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = ''; // Clear existing tasks
+      data.habits.forEach(habit => {
+        const li = document.createElement('li');
+        li.textContent = habit.name;
+        li.dataset.id = habit.id; // Store habit ID in the element
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.onclick = () => deleteHabit(habit.id);
+        li.appendChild(deleteBtn);
+        taskList.appendChild(li);
+      });
+    }
+  
+    // Add a new habit (Create)
+    async function addTask() {
+      const task = prompt("Enter new task:");
+      if (task) {
+        const response = await fetch('http://localhost:5000/api/habits', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({ name: task }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          loadHabits(); // Reload habits after adding
         }
-        calendar.appendChild(cell);
       }
     }
-
-    document.getElementById('prevMonth').onclick = () => {
-      currentDate.setMonth(currentDate.getMonth() - 1);
-      renderCalendar(currentDate);
-    };
-    document.getElementById('nextMonth').onclick = () => {
-      currentDate.setMonth(currentDate.getMonth() + 1);
-      renderCalendar(currentDate);
-    };
-
-    renderCalendar(currentDate);
-
-    function addHabit() {
-      const name = document.getElementById('habitName').value;
-      const deadlineInput = document.getElementById('habitDeadline').value;
-      if (!name || !deadlineInput) return alert("Please enter habit and deadline");
-
-      const deadline = new Date(deadlineInput);
-      const card = document.createElement('div');
-      card.className = 'habit-item';
-      card.innerHTML = `
-        <div>
-          <strong>${name}</strong><br>
-          <small>Until ${deadline.toLocaleDateString()}</small>
-        </div>
-        <div>
-          <button onclick="editHabit(this)">✏️</button>
-          <button onclick="deleteHabit(this)">🗑️</button>
-        </div>
-      `;
-
-      document.getElementById('habitList').appendChild(card);
-      document.getElementById('habitName').value = '';
-      document.getElementById('habitDeadline').value = '';
-
-      const interval = setInterval(() => {
-        const now = new Date();
-        if (now > deadline) {
-          card.remove();
-          clearInterval(interval);
+  
+    // Delete a habit (Delete)
+    async function deleteHabit(habitId) {
+      const response = await fetch(`http://localhost:5000/api/habits/${habitId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        loadHabits(); // Reload habits after deletion
+      }
+    }
+  
+    // Update a habit (Update)
+    async function updateHabit(habitId) {
+      const newTask = prompt("Update task:");
+      if (newTask) {
+        const response = await fetch(`http://localhost:5000/api/habits/${habitId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({ name: newTask }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          loadHabits(); // Reload habits after update
         }
-      }, 60000);
+      }
     }
-
-    function deleteHabit(btn) {
-      btn.closest('.habit-item').remove();
-    }
-
-    function editHabit(btn) {
-      const card = btn.closest('.habit-item');
-      const current = card.querySelector('strong').innerText;
-      const updated = prompt("Edit Habit:", current);
-      if (updated) card.querySelector('strong').innerText = updated;
-    }
-
-    function addNote() {
-      const note = prompt("Enter your note:");
-      if (!note) return;
-      const noteItem = document.createElement('div');
-      noteItem.className = 'note-item';
-      noteItem.innerText = note;
-      document.getElementById('noteList').appendChild(noteItem);
-    }
+  
+    // Call loadHabits on page load to display tasks
+    window.onload = loadHabits;
   </script>
+  
 </body>
 </html>
