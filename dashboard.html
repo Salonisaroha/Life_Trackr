@@ -2,228 +2,610 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Habit Tracker Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      height: 100vh;
-      background-color: #f3f4f6;
-      color: #111827;
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      padding-top: 100px;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
     }
-
-    .sidebar {
-      width: 250px;
-      background-color: #1f2937;
-      color: white;
-      display: flex;
-      flex-direction: column;
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
       padding: 20px;
-    }
-
-    .sidebar h2 {
-      font-size: 1.8rem;
-      margin-bottom: 30px;
-    }
-
-    .sidebar a {
-      color: #d1d5db;
-      text-decoration: none;
-      margin: 10px 0;
-      font-size: 1rem;
-      transition: 0.3s;
-      padding: 10px;
-      border-radius: 8px;
-    }
-
-    .sidebar a:hover {
-      background-color: #374151;
-      color: #fff;
-    }
-
-    .main {
-      flex: 1;
-      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
       overflow-y: auto;
     }
-
-    .calendar {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
-    }
-
-    .calendar-day {
-      background-color: #e5e7eb;
-      border-radius: 10px;
-      padding: 15px;
-      min-width: 100px;
-      text-align: center;
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 24px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
     }
-
-    .calendar-day:hover {
-      background-color: #d1d5db;
+    .progress-bar {
+      transition: width 0.5s ease-in-out;
     }
-
-    .sections {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background-color: #ffffff;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .card h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 1.3rem;
-    }
-
-    .btn {
-      background-color: #4f46e5;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .btn:hover {
-      background-color: #4338ca;
+    .habit-card {
+      transition: all 0.3s ease;
     }
   </style>
 </head>
-<body>
-  <div class="sidebar">
-    <h2>HabitTracker</h2>
-    <a href="#">Dashboard</a>
-    <a href="#">Add Habit</a>
-    <a href="#">View Habits</a>
-    <a href="#">Achievements</a>
-    <a href="#">Goals</a>
-    <a href="#">Logout</a>
+<body class="bg-gray-100 text-gray-800">
+
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white p-6 border-r shadow flex flex-col">
+      <!-- Profile -->
+      <div class="flex items-center gap-4 mb-8">
+        <div class="bg-blue-200 text-blue-800 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">S</div>
+        <div>
+          <h2 class="font-semibold text-lg">Saloni Saroha</h2>
+          <p class="text-xs text-gray-500">Habit Hero</p>
+        </div>
+      </div>
+
+      <!-- Menu -->
+      <nav class="space-y-2">
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-blue-50 font-medium" onclick="loadHabits()">🏠 All Habits</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-blue-50 font-medium" onclick="loadHabitsByTime('Morning')">🌅 Morning</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-blue-50 font-medium" onclick="loadHabitsByTime('Afternoon')">🌞 Afternoon</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-blue-100 text-blue-800 font-semibold" onclick="loadHabitsByTime('Evening')">🌙 Evening</button>
+      </nav>
+
+      <div class="my-4 border-t"></div>
+
+      <h3 class="text-xs text-gray-500 mb-2">AREAS</h3>
+      <button class="w-full text-left px-3 py-2 rounded hover:bg-blue-50" onclick="showAreaModal()">➕ New Area</button>
+
+      <div class="my-4 border-t"></div>
+
+      <h3 class="text-xs text-gray-500 mb-2">PREFERENCES</h3>
+      <nav class="space-y-2">
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-blue-50">⚙️ Manage Habits</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-blue-50">🔧 App Settings</button>
+        <button class="w-full text-left px-3 py-2 rounded hover:bg-blue-50">📚 Resources</button>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 overflow-auto">
+      <!-- Top Navbar -->
+      <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+        <h1 id="section-title" class="text-3xl font-bold text-blue-700">🌙 Evening Habits</h1>
+        <div class="flex flex-wrap gap-3 items-center">
+          <input type="text" placeholder="🔍 Search habits..." class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-blue-300">
+          <select class="border rounded-md px-3 py-2 text-sm">
+            <option>Today</option>
+            <option>Yesterday</option>
+          </select>
+          <select class="border rounded-md px-3 py-2 text-sm">
+            <option>My Order</option>
+            <option>A-Z</option>
+          </select>
+          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow" onclick="showHabitModal()">➕ Add Habit</button>
+        </div>
+      </div>
+
+      <!-- Habit Cards -->
+      <div id="habit-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      
+      </div>
+
+      <!-- Motivation -->
+      <div class="text-center mt-12">
+        <h2 class="text-xl font-semibold mb-2">The Start of a Better You!</h2>
+        <p class="text-gray-500 mb-4">Habits are like dominos. As one is formed, all others will follow!</p>
+        <button class="border border-gray-300 px-4 py-2 rounded hover:bg-gray-200" onclick="showHabitModal()">+ Add Habit</button>
+      </div>
+    </main>
   </div>
 
-  <div class="main">
-    <h1>Welcome Back!</h1>
-    <div class="calendar" id="calendar"></div>
+  <!-- Add Habit Modal -->
+  <div id="habitModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeHabitModal()">&times;</span>
+      <h2 class="text-lg font-semibold mb-4">Add New Habit</h2>
+      <form id="habitForm" onsubmit="submitHabit(event)">
+        <div class="mb-4">
+          <label class="block mb-1">Habit Name:</label>
+          <input type="text" id="habitName" required class="border rounded w-full p-2">
+        </div>
 
-    <div class="sections">
-      <div class="card">
-        <h3>Today's Tasks</h3>
-        <ul id="taskList">
-          <li>Drink Water</li>
-          <li>30-minute Walk</li>
-        </ul>
-        <button class="btn" onclick="addTask()">+ Add Task</button>
-      </div>
+        <div class="mb-4">
+          <label class="block mb-1">Category:</label>
+          <input type="text" id="category" class="border rounded w-full p-2">
+        </div>
 
-      <div class="card">
-        <h3>Achieve Goals</h3>
-        <p>Keep your streak alive! You've completed 4/7 habits this week.</p>
-        <button class="btn">View Progress</button>
-      </div>
+        <div class="mb-4">
+          <label class="block mb-1">Time of Day:</label>
+          <select id="timeOfDay" required class="border rounded w-full p-2">
+            <option value="Morning">Morning</option>
+            <option value="Afternoon">Afternoon</option>
+            <option value="Evening">Evening</option>
+          </select>
+        </div>
 
-      <div class="card">
-        <h3>Completed Habits</h3>
-        <p>🎉 You completed 10 habits this month!</p>
-        <button class="btn">See History</button>
+        <div class="mb-4">
+          <label class="block mb-1">Target Minutes:</label>
+          <input type="number" id="targetMinutes" value="30" min="1" class="border rounded w-full p-2">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block mb-1">Start Date:</label>
+            <input type="date" id="startDate" required class="border rounded w-full p-2">
+          </div>
+          <div>
+            <label class="block mb-1">End Date:</label>
+            <input type="date" id="endDate" required class="border rounded w-full p-2">
+          </div>
+        </div>
+
+        <div class="flex items-center mb-4">
+          <input type="checkbox" id="enableNotifications" checked class="mr-2">
+          <label for="enableNotifications">Enable email reminders</label>
+        </div>
+
+        <button type="submit" class="bg-blue-600 text-white w-full py-2 rounded">Save Habit</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Progress Tracking Modal -->
+  <div id="progressModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeProgressModal()">&times;</span>
+      <h2 class="text-lg font-semibold mb-4">Track Your Progress</h2>
+      <form id="progressForm" onsubmit="submitProgress(event)">
+        <input type="hidden" id="progressHabitId">
+        
+        <div class="mb-4">
+          <label class="block mb-1">Minutes Completed Today:</label>
+          <input type="number" id="progressMinutes" class="border rounded w-full p-2" min="1" required>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block mb-1">Notes (optional):</label>
+          <textarea id="progressNotes" class="border rounded w-full p-2" rows="3"></textarea>
+        </div>
+        
+        <div class="flex items-center mb-4">
+          <input type="checkbox" id="markCompleted" class="mr-2">
+          <label for="markCompleted">Mark habit as completed</label>
+        </div>
+        
+        <button type="submit" class="bg-blue-600 text-white w-full py-2 rounded">Update Progress</button>
+      </form>
+      
+      <div id="progressHistory" class="mt-6">
+        <h3 class="font-semibold mb-2 border-b pb-1">Progress History</h3>
+        <div id="historyList" class="space-y-3"></div>
       </div>
     </div>
   </div>
 
+  <!-- New Area Modal -->
+  <div id="areaModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeAreaModal()">&times;</span>
+      <h2 class="text-lg font-semibold mb-4">Create New Area Note</h2>
+      <form id="areaForm" onsubmit="submitArea(event)">
+        <div class="mb-4">
+          <label class="block mb-1">Note Title:</label>
+          <input type="text" id="noteTitle" required class="border rounded w-full p-2">
+        </div>
+
+        <div class="mb-4">
+          <label class="block mb-1">Select Time of Day:</label>
+          <select id="noteTimeOfDay" required class="border rounded w-full p-2">
+            <option value="Morning">Morning</option>
+            <option value="Afternoon">Afternoon</option>
+            <option value="Evening">Evening</option>
+          </select>
+        </div>
+
+        <button type="submit" class="bg-blue-600 text-white w-full py-2 rounded">Save Note</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
   <script>
-    // Fetch the current habits from the backend
+    const userId = 1;
+
+    // Modal Functions
+    function showHabitModal() {
+      document.getElementById("habitModal").style.display = "block";
+      // Set default dates
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById("startDate").value = today;
+      document.getElementById("endDate").value = today;
+    }
+
+    function closeHabitModal() {
+      document.getElementById("habitModal").style.display = "none";
+      document.getElementById("habitForm").reset();
+    }
+
+    function showProgressModal(habitId) {
+      document.getElementById("progressHabitId").value = habitId;
+      document.getElementById("progressModal").style.display = "block";
+      document.getElementById("progressMinutes").value = "";
+      document.getElementById("progressNotes").value = "";
+      document.getElementById("markCompleted").checked = false;
+      loadProgressHistory(habitId);
+    }
+
+    function closeProgressModal() {
+      document.getElementById("progressModal").style.display = "none";
+    }
+
+    function showAreaModal() {
+      document.getElementById("areaModal").style.display = "block";
+    }
+
+    function closeAreaModal() {
+      document.getElementById("areaModal").style.display = "none";
+    }
+
+    // Habit Loading Functions
     async function loadHabits() {
-      const response = await fetch('http://localhost:5000/api/habits', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`, // Token from localStorage after login
-        },
-      });
-      const data = await response.json();
-      const taskList = document.getElementById('taskList');
-      taskList.innerHTML = ''; // Clear existing tasks
-      data.habits.forEach(habit => {
-        const li = document.createElement('li');
-        li.textContent = habit.name;
-        li.dataset.id = habit.id; // Store habit ID in the element
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => deleteHabit(habit.id);
-        li.appendChild(deleteBtn);
-        taskList.appendChild(li);
-      });
+      document.getElementById("section-title").innerText = "🏠 All Habits";
+      try {
+        const res = await fetch(`http://localhost:3000/habits/${userId}`);
+        const habits = await res.json();
+        renderHabits(habits);
+      } catch (err) {
+        console.error("Error loading habits:", err);
+        alert("Error loading habits.");
+      }
     }
-  
-    // Add a new habit (Create)
-    async function addTask() {
-      const task = prompt("Enter new task:");
-      if (task) {
-        const response = await fetch('http://localhost:5000/api/habits', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify({ name: task }),
+
+    async function loadHabitsByTime(timeOfDay) {
+      document.getElementById("section-title").innerText = `${getTimeIcon(timeOfDay)} ${timeOfDay} Habits`;
+      try {
+        const res = await fetch(`http://localhost:3000/habits/${userId}?timeOfDay=${timeOfDay}`);
+        const habits = await res.json();
+        renderHabits(habits);
+      } catch (err) {
+        console.error(`Error loading ${timeOfDay} habits:`, err);
+        alert(`Error loading ${timeOfDay} habits.`);
+      }
+    }
+
+    function getTimeIcon(timeOfDay) {
+      switch(timeOfDay) {
+        case 'Morning': return '🌅';
+        case 'Afternoon': return '🌞';
+        case 'Evening': return '🌙';
+        default: return '🕒';
+      }
+    }
+
+    // Progress Update Function
+    async function updateProgress(habitId, minutes, notes = '', markCompleted = false) {
+      try {
+        const response = await fetch(`http://localhost:3000/habits/${habitId}/progress`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            progress: parseInt(minutes), 
+            notes, 
+            mark_completed: markCompleted 
+          })
         });
-        const data = await response.json();
-        if (data.success) {
-          loadHabits(); // Reload habits after adding
+
+        if (!response.ok) {
+          throw new Error(await response.text());
         }
+
+        const updatedHabit = await response.json();
+        
+        // Update the specific habit card
+        const habitCard = document.querySelector(`.habit-card[data-habit-id="${habitId}"]`);
+        if (habitCard) {
+          const progressPercentage = Math.round((updatedHabit.current_progress / updatedHabit.target_minutes) * 100);
+          const progressColor = getProgressColor(updatedHabit, progressPercentage);
+          
+          // Update progress bar
+          const progressBar = habitCard.querySelector('.progress-bar');
+          progressBar.style.width = `${progressPercentage}%`;
+          progressBar.className = `h-2.5 rounded-full ${progressColor} progress-bar`;
+          
+          // Update progress text
+          habitCard.querySelector('.progress-text').textContent = 
+            `Progress: ${updatedHabit.current_progress}/${updatedHabit.target_minutes} mins`;
+          
+          // Update completion status if needed
+          if (markCompleted) {
+            habitCard.querySelector('.completion-status').innerHTML = `
+              <div class="text-green-600 text-sm font-medium">
+                <i class="fas fa-check-circle mr-1"></i> Completed
+              </div>`;
+          }
+        }
+
+        return updatedHabit;
+      } catch (err) {
+        console.error("Error updating progress:", err);
+        alert(`Error updating progress: ${err.message}`);
+        throw err;
       }
     }
+
+    async function submitProgress(event) {
+  event.preventDefault();
+  const habitId = document.getElementById("progressHabitId").value;
+  const progress = document.getElementById("progressMinutes").value;
+  const notes = document.getElementById("progressNotes").value;
+  const markCompleted = document.getElementById("markCompleted").checked;
   
-    // Delete a habit (Delete)
-    async function deleteHabit(habitId) {
-      const response = await fetch(`http://localhost:5000/api/habits/${habitId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
+  try {
+    const response = await fetch(`http://localhost:3000/habits/${habitId}/progress`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ 
+        progress: parseInt(progress), 
+        notes, 
+        mark_completed: markCompleted 
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        
+        const errorData = JSON.parse(errorText);
+        throw new Error(errorData.error || "Failed to update progress");
+      } catch {
+      
+        throw new Error(errorText || "Failed to update progress");
+      }
+    }
+
+    const updatedHabit = await response.json();
+    
+    // Update UI
+    const habitCard = document.querySelector(`.habit-card[data-habit-id="${habitId}"]`);
+    if (habitCard) {
+      const progressPercentage = Math.round((updatedHabit.current_progress / updatedHabit.target_minutes) * 100);
+      const progressColor = getProgressColor(updatedHabit, progressPercentage);
+      
+      habitCard.querySelector('.progress-bar').style.width = `${progressPercentage}%`;
+      habitCard.querySelector('.progress-bar').className = `h-2.5 rounded-full ${progressColor} progress-bar`;
+      habitCard.querySelector('.progress-text').textContent = 
+        `Progress: ${updatedHabit.current_progress}/${updatedHabit.target_minutes} mins`;
+      
+      if (markCompleted) {
+        habitCard.querySelector('.completion-status').innerHTML = `
+          <div class="text-green-600 text-sm font-medium">
+            <i class="fas fa-check-circle mr-1"></i> Completed
+          </div>`;
+      }
+    }
+
+    // Refresh history
+    await loadProgressHistory(habitId);
+    
+  } catch (err) {
+    console.error("Progress update error:", err);
+    alert(`Error: ${err.message}`);
+  }
+}
+
+    // Rendering Functions
+    function renderHabits(habits) {
+      const container = document.getElementById("habit-container");
+      container.innerHTML = "";
+      
+      if (!habits || habits.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center col-span-full py-8">No habits found. Add your first habit!</p>';
+        return;
+      }
+
+      habits.forEach(habit => {
+        const category = habit.category || 'No category';
+        const startDate = habit.start_date ? formatDate(habit.start_date) : 'Not set';
+        const endDate = habit.end_date ? formatDate(habit.end_date) : 'Not set';
+        const progressPercentage = calculateProgressPercentage(habit);
+        const progressColor = getProgressColor(habit, progressPercentage);
+        
+        container.innerHTML += `
+          <div class="bg-white shadow rounded-lg p-5 hover:shadow-md transition habit-card" data-habit-id="${habit.id}">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="font-bold text-lg">${habit.name}</h3>
+              <div class="flex items-center gap-2">
+                <button onclick="showProgressModal(${habit.id})" class="text-blue-500 hover:text-blue-700" title="Track progress">
+                  <i class="fas fa-chart-line"></i>
+                </button>
+                <button onclick="deleteHabit(${habit.id})" class="text-red-500 hover:text-red-700" title="Delete habit">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            
+            <p class="text-sm text-gray-600 mb-2"><i class="fas fa-folder mr-1"></i> <strong>Category:</strong> ${category}</p>
+            <p class="text-xs text-gray-500 mb-3"><i class="fas fa-clock mr-1"></i> ${habit.timeOfDay} | <i class="fas fa-calendar mr-1"></i> ${startDate} → ${endDate}</p>
+            
+            <div class="mb-3">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="progress-text">Progress: ${habit.current_progress || 0}/${habit.target_minutes} mins</span>
+                <span>${progressPercentage}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="h-2.5 rounded-full ${progressColor} progress-bar" style="width: ${progressPercentage}%"></div>
+              </div>
+            </div>
+            
+            <div class="completion-status">
+              ${habit.is_completed ? 
+                '<div class="text-green-600 text-sm font-medium"><i class="fas fa-check-circle mr-1"></i> Completed</div>' : 
+                `<button onclick="markHabitCompleted(${habit.id})" class="text-sm text-blue-600 hover:underline">
+                  <i class="fas fa-check mr-1"></i>Mark as completed
+                </button>`
+              }
+            </div>
+          </div>`;
       });
-      const data = await response.json();
-      if (data.success) {
-        loadHabits(); // Reload habits after deletion
+    }
+
+    function calculateProgressPercentage(habit) {
+      if (!habit.target_minutes || habit.target_minutes === 0) return 0;
+      const percentage = Math.round(((habit.current_progress || 0) / habit.target_minutes) * 100);
+      return Math.min(percentage, 100); // Cap at 100%
+    }
+
+    function getProgressColor(habit, percentage) {
+      if (habit.is_completed) return 'bg-green-500';
+      if (percentage >= 75) return 'bg-blue-500';
+      if (percentage >= 50) return 'bg-yellow-500';
+      return 'bg-red-500';
+    }
+
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString(undefined, options);
+    }
+
+    // Progress History Functions
+    async function loadProgressHistory(habitId) {
+      try {
+        const res = await fetch(`http://localhost:3000/habits/${habitId}/logs`);
+        const logs = await res.json();
+        
+        const historyList = document.getElementById("historyList");
+        historyList.innerHTML = logs.length > 0 ? 
+          logs.map(log => `
+            <div class="border-b pb-2">
+              <div class="flex justify-between">
+                <span class="font-medium">+${log.progress} mins</span>
+                <span class="text-gray-500 text-sm">${formatDateTime(log.logged_at)}</span>
+              </div>
+              ${log.notes ? `<p class="text-gray-600 text-sm mt-1">${log.notes}</p>` : ''}
+            </div>
+          `).join('') : 
+          '<p class="text-gray-500 text-center py-4">No progress recorded yet</p>';
+      } catch (err) {
+        console.error("Error loading progress history:", err);
+        document.getElementById("historyList").innerHTML = 
+          '<p class="text-red-500 text-center py-4">Error loading history</p>';
       }
     }
-  
-    // Update a habit (Update)
-    async function updateHabit(habitId) {
-      const newTask = prompt("Update task:");
-      if (newTask) {
-        const response = await fetch(`http://localhost:5000/api/habits/${habitId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify({ name: newTask }),
+
+    function formatDateTime(dateTimeString) {
+      const options = { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      return new Date(dateTimeString).toLocaleDateString(undefined, options);
+    }
+
+    // CRUD Operations
+    async function submitHabit(event) {
+      event.preventDefault();
+      const name = document.getElementById("habitName").value;
+      const category = document.getElementById("category").value;
+      const timeOfDay = document.getElementById("timeOfDay").value;
+      const targetMinutes = document.getElementById("targetMinutes").value;
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+      const notificationEnabled = document.getElementById("enableNotifications").checked;
+
+      // Validate dates
+      if (new Date(endDate) < new Date(startDate)) {
+        alert("End date cannot be before start date");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:3000/habits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            user_id: userId, 
+            name, 
+            category, 
+            timeOfDay, 
+            target_minutes: targetMinutes,
+            start_date: startDate, 
+            end_date: endDate,
+            notification_enabled: notificationEnabled
+          })
         });
-        const data = await response.json();
-        if (data.success) {
-          loadHabits(); // Reload habits after update
-        }
+
+        if (!response.ok) throw new Error("Failed to save habit");
+        
+        closeHabitModal();
+        loadHabits();
+      } catch (err) {
+        console.error("Error saving habit:", err);
+        alert("Error saving habit. Please try again.");
       }
     }
-  
-    // Call loadHabits on page load to display tasks
-    window.onload = loadHabits;
+
+    async function markHabitCompleted(habitId) {
+      if (!confirm("Mark this habit as completed?")) return;
+      
+      try {
+        await updateProgress(habitId, 0, '', true);
+        loadHabits();
+      } catch (err) {
+        console.error("Error marking habit as completed:", err);
+        alert("Error completing habit. Please try again.");
+      }
+    }
+
+    async function deleteHabit(id) {
+      if (!confirm("Are you sure you want to delete this habit?")) return;
+      
+      try {
+        const response = await fetch(`http://localhost:3000/habits/${id}`, { 
+          method: "DELETE" 
+        });
+
+        if (!response.ok) throw new Error("Failed to delete habit");
+        
+        loadHabits();
+      } catch (err) {
+        console.error("Error deleting habit:", err);
+        alert("Error deleting habit. Please try again.");
+      }
+    }
+
+    function submitArea(event) {
+      event.preventDefault();
+      const noteTitle = document.getElementById("noteTitle").value;
+      const noteTimeOfDay = document.getElementById("noteTimeOfDay").value;
+      alert(`Note "${noteTitle}" saved for ${noteTimeOfDay} habits!`);
+      loadHabitsByTime(noteTimeOfDay);
+      closeAreaModal();
+    }
+
+    // Initialize with Evening habits
+    window.onload = function() {
+      loadHabitsByTime('Evening');
+      
+      // Set today's date as default for date inputs
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById("startDate").value = today;
+      document.getElementById("endDate").value = today;
+    };
   </script>
-  
 </body>
 </html>
