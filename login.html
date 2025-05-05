@@ -180,7 +180,7 @@
                 const body = isLogin ? { email, password } : { name, email, password };
 
                 try {
-                    const res = await fetch(`http://localhost:5000${endpoint}`, {
+                    const res = await fetch(`http://localhost:3000${endpoint}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(body)
@@ -194,7 +194,7 @@
                     }
 
                     if (isLogin) {
-                        // Store token if needed: localStorage.setItem("token", data.token);
+                    
                         window.location.href = "dashboard.html";
                     } else {
                         alert("Account created successfully. Please login.");
