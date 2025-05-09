@@ -1,6 +1,9 @@
 const db = require("../config");
 const nodemailer = require('nodemailer');
 const moment = require('moment');
+const cron = require('node-cron');
+
+
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
@@ -11,29 +14,84 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Email Templates
+const emailTemplates = {
+    reminder: (habit) => `
+        <h2>Habit Tracker Reminder</h2>
+        <p>Don't forget to work on your habit: <strong>${habit.name}</strong></p>
+        <p>Scheduled time: ${habit.timeOfDay}</p>
+        <p>Target: ${habit.target_minutes} minutes</p>
+        <p>Current progress: ${habit.current_progress} minutes (${Math.round((habit.current_progress/habit.target_minutes)*100)}%)</p>
+        <p>Due date: ${moment(habit.end_date).format('MMMM Do YYYY')}</p>
+        <a href="http://your-app-url.com/habits">Track your progress now</a>
+    `,
+    missed: (habit) => `
+        <h2>Missed Habit Alert</h2>
+        <p>You missed updating your habit: <strong>${habit.name}</strong> today!</p>
+        <p>This will affect your progress toward your goal.</p>
+        <p>Current progress: ${habit.current_progress} minutes (${Math.round((habit.current_progress/habit.target_minutes)*100)}%)</p>
+        <a href="http://your-app-url.com/habits">Update your progress now</a>
+    `
+};
 // Helper function to send email
-async function sendHabitNotification(email, habit) {
+async function sendHabitNotification(email, habit, type = 'reminder') {
     try {
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
-            subject: `Reminder: ${habit.name}`,
-            html: `
-                <h2>Habit Tracker Reminder</h2>
-                <p>Don't forget to work on your habit: <strong>${habit.name}</strong></p>
-                <p>Scheduled time: ${habit.timeOfDay}</p>
-                <p>Target: ${habit.target_minutes} minutes</p>
-                <p>Current progress: ${habit.current_progress} minutes (${Math.round((habit.current_progress/habit.target_minutes)*100)}%)</p>
-                <p>Due date: ${moment(habit.end_date).format('MMMM Do YYYY')}</p>
-                <a href="http://your-app-url.com/habits">Track your progress now</a>
-            `
+            subject: type === 'reminder' 
+                ? `Reminder: ${habit.name}` 
+                : `Missed: ${habit.name}`,
+            html: emailTemplates[type](habit)
         };
 
         await transporter.sendMail(mailOptions);
+        return true;
     } catch (err) {
         console.error('Error sending email:', err);
+        return false;
     }
 }
+
+
+// Check for missed habits daily at 11:59 PM
+cron.schedule('59 23 * * *', async () => {
+    try {
+        const [habits] = await db.promise().query(`
+            SELECT h.*, u.email 
+            FROM habits h
+            JOIN users u ON h.user_id = u.id
+            WHERE h.notification_enabled = TRUE
+            AND h.is_completed = FALSE
+            AND h.end_date >= CURDATE()
+        `);
+
+        const today = moment().format('YYYY-MM-DD');
+        
+        for (const habit of habits) {
+            const [logs] = await db.promise().query(
+                `SELECT 1 FROM habit_logs 
+                 WHERE habit_id = ? 
+                 AND DATE(logged_at) = ? 
+                 LIMIT 1`,
+                [habit.id, today]
+            );
+
+            if (logs.length === 0) {
+                await db.promise().query(
+                    `INSERT INTO habit_logs 
+                     (habit_id, progress, notes, status) 
+                     VALUES (?, ?, ?, ?)`,
+                    [habit.id, 0, 'Missed update', 'missed']
+                );
+
+                await sendHabitNotification(habit.email, habit, 'missed');
+            }
+        }
+    } catch (err) {
+        console.error('Error in daily habit check:', err);
+    }
+});
 
 // Updated controller methods
 exports.getHabits = async (req, res) => {
