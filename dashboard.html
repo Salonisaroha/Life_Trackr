@@ -296,7 +296,7 @@
     async function updateProgress(habitId, minutes, notes = '', markCompleted = false) {
       try {
         const response = await fetch(`http://localhost:3000/habits/${habitId}/progress`, {
-          method: "POST",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             progress: parseInt(minutes), 
@@ -352,7 +352,7 @@
   
   try {
     const response = await fetch(`http://localhost:3000/habits/${habitId}/progress`, {
-      method: "POST",
+      method: "PUT",
       headers: { 
         "Content-Type": "application/json",
         "Accept": "application/json"
@@ -367,11 +367,11 @@
     if (!response.ok) {
       const errorText = await response.text();
       try {
-        
+        // Try to parse as JSON
         const errorData = JSON.parse(errorText);
         throw new Error(errorData.error || "Failed to update progress");
       } catch {
-      
+        // If not JSON, use raw text
         throw new Error(errorText || "Failed to update progress");
       }
     }
@@ -399,6 +399,7 @@
 
     // Refresh history
     await loadProgressHistory(habitId);
+    closeProgressModal();
     
   } catch (err) {
     console.error("Progress update error:", err);
@@ -560,16 +561,31 @@
     }
 
     async function markHabitCompleted(habitId) {
-      if (!confirm("Mark this habit as completed?")) return;
-      
-      try {
-        await updateProgress(habitId, 0, '', true);
-        loadHabits();
-      } catch (err) {
-        console.error("Error marking habit as completed:", err);
-        alert("Error completing habit. Please try again.");
-      }
-    }
+  if (!confirm("Mark this habit as completed?")) return;
+  
+  try {
+    // Get the habit first to know the target minutes
+    const habitRes = await fetch(`http://localhost:3000/habits/${habitId}`);
+    const habit = await habitRes.json();
+    
+    // Calculate remaining progress needed
+    const remaining = habit.target_minutes - (habit.current_progress || 0);
+    
+    // Update with remaining progress and mark as completed
+    await updateProgress(
+      habitId, 
+      remaining > 0 ? remaining : 0, 
+      'Marked as completed', 
+      true
+    );
+    
+    // Reload the habits
+    loadHabitsByTime(document.getElementById("section-title").textContent.replace(/^[^ ]+ /, ""));
+  } catch (err) {
+    console.error("Error marking habit as completed:", err);
+    alert(`Error completing habit: ${err.message}`);
+  }
+}
 
     async function deleteHabit(id) {
       if (!confirm("Are you sure you want to delete this habit?")) return;
