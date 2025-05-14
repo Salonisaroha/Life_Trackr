@@ -1,3 +1,4 @@
+
 const db = require("../config");
 const nodemailer = require('nodemailer');
 const moment = require('moment');
@@ -69,7 +70,7 @@ cron.schedule('59 23 * * *', async () => {
         const today = moment().format('YYYY-MM-DD');
         
         for (const habit of habits) {
-            const [logs] = await db.query(
+            const [logs] = await db.promise().query(
                 `SELECT 1 FROM habit_logs 
                  WHERE habit_id = ? 
                  AND DATE(logged_at) = ? 
@@ -78,7 +79,7 @@ cron.schedule('59 23 * * *', async () => {
             );
 
             if (logs.length === 0) {
-                await db.query(
+                await db.promise().query(
                     `INSERT INTO habit_logs 
                      (habit_id, progress, notes, status) 
                      VALUES (?, ?, ?, ?)`,
@@ -118,7 +119,7 @@ exports.getHabits = async (req, res) => {
             params.push(timeOfDay);
         }
 
-        const [habits] = await db.query(query, params);
+        const [habits] = await db.promise().query(query, params);
         
         // Add progress percentage
         const habitsWithProgress = habits.map(habit => ({
@@ -137,7 +138,7 @@ exports.updateHabit = async (req, res) => {
     const { name, category, timeOfDay, start_date, end_date, target_minutes } = req.body;
 
     try {
-        await db.query(
+        await db.promise().query(
             `UPDATE habits 
              SET name = ?, category = ?, timeOfDay = ?, 
                  start_date = ?, end_date = ?, target_minutes = ?
@@ -156,14 +157,14 @@ exports.addHabit = async (req, res) => {
     const { user_id, name, category, timeOfDay, start_date, end_date, target_minutes } = req.body;
     
     try {
-        const [result] = await db.query(
+        const [result] = await db.promise().query(
             `INSERT INTO habits 
                 (user_id, name, category, timeOfDay, start_date, end_date, target_minutes) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [user_id, name, category || null, timeOfDay, start_date || null, end_date || null, target_minutes || 30]
         );
 
-        const [habit] = await db.query(
+        const [habit] = await db.promise().query(
             `SELECT h.*, u.email 
              FROM habits h
              JOIN users u ON h.user_id = u.id
@@ -190,84 +191,97 @@ exports.updateHabitProgress = async (req, res) => {
     if (!id || isNaN(id)) {
         return res.status(400).json({ error: "Invalid habit ID" });
     }
-    if (progress && isNaN(progress)) {
-        return res.status(400).json({ error: "Progress must be a number" });
-    }
 
     try {
-        // Get current habit data
-        const [habits] = await db.query(
-            `SELECT h.*, u.email 
-             FROM habits h
-             JOIN users u ON h.user_id = u.id
-             WHERE h.id = ?`, 
-            [id]
-        );
-        
-        if (habits.length === 0) {
-            return res.status(404).json({ error: "Habit not found" });
-        }
+        // Start a transaction
+        const connection = await db.promise().getConnection();
+        await connection.beginTransaction();
 
-        const habit = habits[0];
-        let newProgress = habit.current_progress;
-        let isCompleted = habit.is_completed;
-
-        // Update progress if provided
-        if (progress && !isNaN(progress)) {
-            newProgress = Math.min(habit.current_progress + parseInt(progress), habit.target_minutes);
-            await db.query(
-                `UPDATE habits 
-                 SET current_progress = ?, 
-                     last_updated = NOW() 
-                 WHERE id = ?`,
-                [newProgress, id]
+        try {
+            // Get current habit data
+            const [habits] = await connection.query(
+                `SELECT h.*, u.email 
+                 FROM habits h
+                 JOIN users u ON h.user_id = u.id
+                 WHERE h.id = ?`, 
+                [id]
             );
-
-            // Log the progress update
-            await db.query(
-                `INSERT INTO habit_logs 
-                 (habit_id, progress, notes) 
-                 VALUES (?, ?, ?)`,
-                [id, progress, notes || null]
-            );
-        }
-
-        // Mark as completed if requested
-        if (mark_completed && !isCompleted) {
-            isCompleted = true;
-            await db.query(
-                `UPDATE habits 
-                 SET is_completed = ?, 
-                     current_progress = target_minutes 
-                 WHERE id = ?`,
-                [true, id]
-            );
-        }
-
-        // Send notification if enabled
-        if (habit.notification_enabled && progress) {
-            try {
-                await sendHabitNotification(habit.email, {
-                    ...habit,
-                    current_progress: newProgress,
-                    is_completed: isCompleted
-                });
-            } catch (notificationError) {
-                console.error("Notification failed:", notificationError);
-                // Don't fail the whole request if notification fails
+            
+            if (habits.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ error: "Habit not found" });
             }
+
+            const habit = habits[0];
+            let newProgress = habit.current_progress;
+            let isCompleted = habit.is_completed;
+
+            // Update progress if provided
+            if (progress && !isNaN(progress)) {
+                newProgress = Math.min(habit.current_progress + parseInt(progress), habit.target_minutes);
+                await connection.query(
+                    `UPDATE habits 
+                     SET current_progress = ?, 
+                         last_updated = NOW() 
+                     WHERE id = ?`,
+                    [newProgress, id]
+                );
+
+                // Log the progress update
+                await connection.query(
+                    `INSERT INTO habit_logs 
+                     (habit_id, progress, notes) 
+                     VALUES (?, ?, ?)`,
+                    [id, progress, notes || null]
+                );
+            }
+
+            // Mark as completed if requested
+            if (mark_completed && !isCompleted) {
+                isCompleted = true;
+                await connection.query(
+                    `UPDATE habits 
+                     SET is_completed = ?, 
+                         current_progress = target_minutes 
+                     WHERE id = ?`,
+                    [true, id]
+                );
+            }
+
+            // Commit transaction
+            await connection.commit();
+
+            // Send notification if enabled
+            if (habit.notification_enabled && progress) {
+                try {
+                    await sendHabitNotification(habit.email, {
+                        ...habit,
+                        current_progress: newProgress,
+                        is_completed: isCompleted
+                    });
+                } catch (notificationError) {
+                    console.error("Notification failed:", notificationError);
+                    // Don't fail the whole request if notification fails
+                }
+            }
+
+            // Return updated habit
+            const [updatedHabit] = await connection.query(
+                `SELECT * FROM habits WHERE id = ?`, 
+                [id]
+            );
+
+            res.json({
+                ...updatedHabit[0],
+                progress_percentage: Math.round((updatedHabit[0].current_progress / updatedHabit[0].target_minutes) * 100)
+            });
+
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
         }
-
-        // Return updated habit
-        const [updatedHabit] = await db.query(
-            `SELECT * FROM habits WHERE id = ?`, 
-            [id]
-        );
-
-        res.json({
-            ...updatedHabit[0],
-            progress_percentage: Math.round((updatedHabit[0].current_progress / updatedHabit[0].target_minutes) * 100)
-        });
 
     } catch (err) {
         console.error("Error updating habit progress:", err);
@@ -282,7 +296,7 @@ exports.getHabitLogs = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const [logs] = await db.query(
+        const [logs] = await db.promise().query(
             `SELECT * FROM habit_logs 
              WHERE habit_id = ? 
              ORDER BY logged_at DESC`,
@@ -301,13 +315,13 @@ exports.deleteHabit = async (req, res) => {
 
     try {
         // First delete related logs to maintain referential integrity
-        await db.query(
+        await db.promise().query(
             "DELETE FROM habit_logs WHERE habit_id = ?",
             [id]
         );
 
         // Then delete the habit
-        const [result] = await db.query(
+        const [result] = await db.promise().query(
             "DELETE FROM habits WHERE id = ?",
             [id]
         );
@@ -334,7 +348,7 @@ exports.toggleNotification = async (req, res) => {
     const { enabled } = req.body;
 
     try {
-        await db.query(
+        await db.promise().query(
             `UPDATE habits SET notification_enabled = ? WHERE id = ?`,
             [enabled, id]
         );
