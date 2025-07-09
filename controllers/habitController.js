@@ -183,132 +183,148 @@ exports.addHabit = async (req, res) => {
     }
 };
 
-exports.updateHabitProgress = async (req, res) => {
-    const { id } = req.params;
-    const { progress, notes, mark_completed } = req.body;
+exports.updateHabitProgress = (req, res) => {
+  const { id } = req.params;
+  const { progress, notes, mark_completed } = req.body;
 
-    // Validate input
-    if (!id || isNaN(id)) {
-        return res.status(400).json({ error: "Invalid habit ID" });
+  if (!id || isNaN(id)) {
+    return res.status(400).json({ error: "Invalid habit ID" });
+  }
+
+  db.beginTransaction((err) => {
+    if (err) {
+      console.error("Transaction error:", err);
+      return res.status(500).json({ error: "Transaction failed to start" });
     }
 
-    try {
-        // Start a transaction
-        const connection = await db.promise().getConnection();
-        await connection.beginTransaction();
-
-        try {
-            // Get current habit data
-            const [habits] = await connection.query(
-                `SELECT h.*, u.email 
-                 FROM habits h
-                 JOIN users u ON h.user_id = u.id
-                 WHERE h.id = ?`, 
-                [id]
-            );
-            
-            if (habits.length === 0) {
-                await connection.rollback();
-                return res.status(404).json({ error: "Habit not found" });
-            }
-
-            const habit = habits[0];
-            let newProgress = habit.current_progress;
-            let isCompleted = habit.is_completed;
-
-            // Update progress if provided
-            if (progress && !isNaN(progress)) {
-                newProgress = Math.min(habit.current_progress + parseInt(progress), habit.target_minutes);
-                await connection.query(
-                    `UPDATE habits 
-                     SET current_progress = ?, 
-                         last_updated = NOW() 
-                     WHERE id = ?`,
-                    [newProgress, id]
-                );
-
-                // Log the progress update
-                await connection.query(
-                    `INSERT INTO habit_logs 
-                     (habit_id, progress, notes) 
-                     VALUES (?, ?, ?)`,
-                    [id, progress, notes || null]
-                );
-            }
-
-            // Mark as completed if requested
-            if (mark_completed && !isCompleted) {
-                isCompleted = true;
-                await connection.query(
-                    `UPDATE habits 
-                     SET is_completed = ?, 
-                         current_progress = target_minutes 
-                     WHERE id = ?`,
-                    [true, id]
-                );
-            }
-
-            // Commit transaction
-            await connection.commit();
-
-            // Send notification if enabled
-            if (habit.notification_enabled && progress) {
-                try {
-                    await sendHabitNotification(habit.email, {
-                        ...habit,
-                        current_progress: newProgress,
-                        is_completed: isCompleted
-                    });
-                } catch (notificationError) {
-                    console.error("Notification failed:", notificationError);
-                    // Don't fail the whole request if notification fails
-                }
-            }
-
-            // Return updated habit
-            const [updatedHabit] = await connection.query(
-                `SELECT * FROM habits WHERE id = ?`, 
-                [id]
-            );
-
-            res.json({
-                ...updatedHabit[0],
-                progress_percentage: Math.round((updatedHabit[0].current_progress / updatedHabit[0].target_minutes) * 100)
-            });
-
-        } catch (err) {
-            await connection.rollback();
-            throw err;
-        } finally {
-            connection.release();
+    db.query(
+      `SELECT h.*, u.email 
+       FROM habits h
+       JOIN users u ON h.user_id = u.id
+       WHERE h.id = ?`,
+      [id],
+      async (err, habits) => {
+        if (err) {
+          return db.rollback(() => {
+            console.error(err);
+            res.status(500).json({ error: "Failed to fetch habit" });
+          });
         }
 
-    } catch (err) {
-        console.error("Error updating habit progress:", err);
-        res.status(500).json({ 
-            error: "Failed to update habit progress",
-            details: process.env.NODE_ENV === 'development' ? err.message : undefined
-        });
-    }
+        if (habits.length === 0) {
+          return db.rollback(() => {
+            res.status(404).json({ error: "Habit not found" });
+          });
+        }
+
+        const habit = habits[0];
+        let newProgress = habit.current_progress;
+        let isCompleted = habit.is_completed;
+
+        const updateTasks = [];
+
+        if (progress && !isNaN(progress)) {
+          newProgress = Math.min(habit.current_progress + parseInt(progress), habit.target_minutes);
+          updateTasks.push(new Promise((resolve, reject) => {
+            db.query(
+              `UPDATE habits 
+               SET current_progress = ?, last_updated = NOW() 
+               WHERE id = ?`,
+              [newProgress, id],
+              (err) => err ? reject(err) : resolve()
+            );
+          }));
+
+          updateTasks.push(new Promise((resolve, reject) => {
+            db.query(
+              `INSERT INTO habit_logs 
+               (habit_id, progress, notes) 
+               VALUES (?, ?, ?)`,
+              [id, progress, notes || null],
+              (err) => err ? reject(err) : resolve()
+            );
+          }));
+        }
+
+        if (mark_completed && !isCompleted) {
+          isCompleted = true;
+          updateTasks.push(new Promise((resolve, reject) => {
+            db.query(
+              `UPDATE habits 
+               SET is_completed = ?, current_progress = target_minutes 
+               WHERE id = ?`,
+              [true, id],
+              (err) => err ? reject(err) : resolve()
+            );
+          }));
+        }
+
+        Promise.all(updateTasks)
+          .then(async () => {
+            db.commit(async (err) => {
+              if (err) {
+                return db.rollback(() => {
+                  console.error(err);
+                  res.status(500).json({ error: "Failed to commit transaction" });
+                });
+              }
+
+              if (habit.notification_enabled && progress) {
+                await sendHabitNotification(habit.email, {
+                  ...habit,
+                  current_progress: newProgress,
+                  is_completed: isCompleted
+                });
+              }
+
+              db.query(
+                `SELECT * FROM habits WHERE id = ?`,
+                [id],
+                (err, updatedHabit) => {
+                  if (err) {
+                    console.error(err);
+                    return res.status(500).json({ error: "Failed to fetch updated habit" });
+                  }
+
+                  res.json({
+                    ...updatedHabit[0],
+                    progress_percentage: Math.round(
+                      (updatedHabit[0].current_progress / updatedHabit[0].target_minutes) * 100
+                    )
+                  });
+                }
+              );
+            });
+          })
+          .catch((err) => {
+            db.rollback(() => {
+              console.error("Error updating habit progress:", err);
+              res.status(500).json({ error: "Failed to update habit progress" });
+            });
+          });
+      }
+    );
+  });
 };
 
 exports.getHabitLogs = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        const [logs] = await db.promise().query(
-            `SELECT * FROM habit_logs 
-             WHERE habit_id = ? 
-             ORDER BY logged_at DESC`,
-            [id]
-        );
+  try {
+    const [logs] = await db.promise().query(
+      `SELECT * FROM habit_logs 
+       WHERE habit_id = ? 
+       ORDER BY logged_at DESC`,
+      [id]
+    );
 
-        res.json(logs);
-    } catch (err) {
-        console.error("Error fetching habit logs:", err);
-        res.status(500).json({ error: "Failed to fetch habit logs" });
-    }
+    res.json(logs);
+  } catch (err) {
+    console.error("Error fetching habit logs:", err);
+    res.status(500).json({ error: "Failed to fetch habit logs" });
+  }
 };
+
 
 exports.deleteHabit = async (req, res) => {
     const { id } = req.params;
