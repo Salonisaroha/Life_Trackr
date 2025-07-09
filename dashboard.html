@@ -49,7 +49,8 @@
       <div class="flex items-center gap-4 mb-8">
         <div class="bg-blue-200 text-blue-800 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">S</div>
         <div>
-          <h2 class="font-semibold text-lg">Saloni Saroha</h2>
+         <h2 id="userName" class="font-semibold text-lg"></h2>
+
           <p class="text-xs text-gray-500">Habit Hero</p>
         </div>
       </div>
@@ -79,7 +80,6 @@
 
     <!-- Main Content -->
     <main class="flex-1 p-8 overflow-auto">
-      <!-- Top Navbar -->
       <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
         <h1 id="section-title" class="text-3xl font-bold text-blue-700">🌙 Evening Habits</h1>
         <div class="flex flex-wrap gap-3 items-center">
@@ -96,6 +96,15 @@
         </div>
       </div>
 
+      <div id="habit-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"></div>
+
+      <div class="text-center mt-12">
+        <h2 class="text-xl font-semibold mb-2">The Start of a Better You!</h2>
+        <p class="text-gray-500 mb-4">Habits are like dominos. As one is formed, all others will follow!</p>
+        <button class="border border-gray-300 px-4 py-2 rounded hover:bg-gray-200" onclick="showHabitModal()">+ Add Habit</button>
+      </div>
+    </main>
+  </div>
       <!-- Habit Cards -->
       <div id="habit-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
       
@@ -161,32 +170,28 @@
     </div>
   </div>
 
-  <!-- Progress Tracking Modal -->
+  
+   <!-- Progress Tracking Modal (key part) -->
   <div id="progressModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeProgressModal()">&times;</span>
       <h2 class="text-lg font-semibold mb-4">Track Your Progress</h2>
       <form id="progressForm" onsubmit="submitProgress(event)">
         <input type="hidden" id="progressHabitId">
-        
         <div class="mb-4">
           <label class="block mb-1">Minutes Completed Today:</label>
           <input type="number" id="progressMinutes" class="border rounded w-full p-2" min="1" required>
         </div>
-        
         <div class="mb-4">
           <label class="block mb-1">Notes (optional):</label>
           <textarea id="progressNotes" class="border rounded w-full p-2" rows="3"></textarea>
         </div>
-        
         <div class="flex items-center mb-4">
           <input type="checkbox" id="markCompleted" class="mr-2">
           <label for="markCompleted">Mark habit as completed</label>
         </div>
-        
         <button type="submit" class="bg-blue-600 text-white w-full py-2 rounded">Update Progress</button>
       </form>
-      
       <div id="progressHistory" class="mt-6">
         <h3 class="font-semibold mb-2 border-b pb-1">Progress History</h3>
         <div id="historyList" class="space-y-3"></div>
@@ -221,7 +226,9 @@
 
   <!-- JavaScript -->
   <script>
-    const userId = 1;
+    // const userId = 1;
+const user = JSON.parse(localStorage.getItem('user'));
+const userId = user?.id || 1;
 
     // Modal Functions
     function showHabitModal() {
@@ -259,17 +266,18 @@
     }
 
     // Habit Loading Functions
-    async function loadHabits() {
-      document.getElementById("section-title").innerText = "🏠 All Habits";
-      try {
-        const res = await fetch(`http://localhost:3000/habits/${userId}`);
-        const habits = await res.json();
-        renderHabits(habits);
-      } catch (err) {
-        console.error("Error loading habits:", err);
-        alert("Error loading habits.");
-      }
-    }
+   async function loadHabits() {
+  document.getElementById("section-title").innerText = "🏠 All Habits";
+  try {
+    const res = await fetch(`http://localhost:3000/habits/${userId}`);
+    const habits = await res.json();
+    renderHabits(habits);
+  } catch (err) {
+    console.error("Error loading habits:", err);
+    alert("Error loading habits.");
+  }
+}
+
 
     async function loadHabitsByTime(timeOfDay) {
       document.getElementById("section-title").innerText = `${getTimeIcon(timeOfDay)} ${timeOfDay} Habits`;
@@ -482,13 +490,13 @@
     }
 
     // Progress History Functions
-    async function loadProgressHistory(habitId) {
+     async function loadProgressHistory(habitId) {
       try {
         const res = await fetch(`http://localhost:3000/habits/${habitId}/logs`);
+        if (!res.ok) throw new Error("Failed to fetch logs");
         const logs = await res.json();
-        
         const historyList = document.getElementById("historyList");
-        historyList.innerHTML = logs.length > 0 ? 
+        historyList.innerHTML = logs.length > 0 ?
           logs.map(log => `
             <div class="border-b pb-2">
               <div class="flex justify-between">
@@ -497,13 +505,18 @@
               </div>
               ${log.notes ? `<p class="text-gray-600 text-sm mt-1">${log.notes}</p>` : ''}
             </div>
-          `).join('') : 
-          '<p class="text-gray-500 text-center py-4">No progress recorded yet</p>';
+          `).join('')
+          : '<p class="text-gray-500 text-center py-4">No progress recorded yet</p>';
       } catch (err) {
         console.error("Error loading progress history:", err);
-        document.getElementById("historyList").innerHTML = 
-          '<p class="text-red-500 text-center py-4">Error loading history</p>';
+        document.getElementById("historyList").innerHTML =
+          '<p class="text-red-500 text-center py-4">Failed to load progress history.</p>';
       }
+    }
+
+    function formatDateTime(dateTimeString) {
+      const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      return new Date(dateTimeString).toLocaleDateString(undefined, options);
     }
 
     function formatDateTime(dateTimeString) {
@@ -622,6 +635,20 @@
       document.getElementById("startDate").value = today;
       document.getElementById("endDate").value = today;
     };
+   // ✅ Single window.onload for everything!
+window.onload = function() {
+  if (user && user.name) {
+    document.getElementById('userName').innerText = user.name;
+  } else {
+    document.getElementById('userName').innerText = "Guest";
+  }
+
+  // ✅ Load All Habits by default
+  loadHabits();
+};
+
+
+
   </script>
 </body>
 </html>

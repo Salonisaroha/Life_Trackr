@@ -4,6 +4,7 @@ const habitController = require("../controllers/habitController");
 
 // Routes
 router.get("/:userId", habitController.getHabits);
+router.get("/:id/logs", habitController.getHabitLogs);
 router.post("/", habitController.addHabit);
 router.put("/:id/progress", habitController.updateHabitProgress);  
 router.put("/:id", habitController.updateHabit);                  
